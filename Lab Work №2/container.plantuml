@@ -1,0 +1,34 @@
+@startuml C4Container
+!include libs\C4_Context.puml
+!include libs\C4_Container.puml
+
+title
+    <b>Система сбора и анализа списков поступающих</b>
+    <i>Container diagram</i>
+end title
+
+Person(user, "Приёмная комиссия", "Просматривает списки абитуриентов и аналитику")
+
+System_Boundary(applications_scrapper, "Агрегатор списков заявлений") {
+    Container(spa, "Single Page Application", "JavaScript, React.js 18", "Отображает списки поступающих и аналитику")
+    Container(gateway, "API Gateway", "Python, FastAPI 0.1", "Предоставляет доступ к информации о списках поступающих и выполняет запросы к другим сервисам")
+    Container(applications_db, "DB", "PostgreSQL", "Содержит информацию о направлениях обучения и абитуриентах и данные для входа пользователей")
+    SystemQueue(broker, "RabbitMQ", "Управляет запросами между сервисами")
+    Container(scrapper, "Сборщик списков", "Python, FastAPI 0.1", "Регулярно собирает списки поступающих с сайтов вузов")
+    Container(analysis, "Data analyzer", "Python, FastAPI 0.1", "Занимается расчётами, связанными с применением моделей искусственного интеллекта")
+    Container(analysis_db, "DB", "PostgreSQL", "Хранит информацию, необходимую для анализа списков.")
+
+    Rel(spa, gateway, "Совершает API запросы", "JSON/HTTP")
+    Rel_R(gateway, broker, "Запрашивает данные", "RabbitMQ")
+    Rel(broker, scrapper, "Запрашивает данные", "RabbitMQ")
+    Rel(broker, analysis, "Запрашивает данные", "RabbitMQ")
+    Rel(analysis, analysis_db, "Читает и записывает", "SQLAlchemy")
+    Rel(scrapper, applications_db, "Читает и записывает", "SQLAlchemy")
+}
+
+System_Ext(universities_system, "Сайты вузов", "Содержат конкурсные списки.")
+
+Rel(user, spa, "Просматривает данные")
+Rel_L(scrapper, universities_system, "Получает списки", "HTTP")
+
+@enduml
