@@ -1,0 +1,20 @@
+@startuml C4AnalyzerComponent
+!include libs\C4_Container.puml
+!include libs\C4_Component.puml
+
+title
+    <b>Агрегатор списков заявлений</b>
+    <i>Component diagram</i>
+end title
+
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+
+Container_Boundary(analyzer_bound, "Data Analyzer") {
+    Component(api, "API Controller", "", "Принимает запросы. Запрашивает списки поступающих для анализа.")
+    Component(analyzer, "Analysis controller", "", "Создаёт модели машинного обучения")
+
+    Rel(broker, api, "Запрашивает данные", "RabbitMQ")
+    Rel(api, analyzer, "Uses")
+}
+
+@enduml

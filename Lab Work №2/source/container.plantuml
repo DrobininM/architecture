@@ -1,0 +1,39 @@
+@startuml C4Container
+!include libs\C4_Context.puml
+!include libs\C4_Container.puml
+
+title
+    <b>Система сбора и анализа списков поступающих</b>
+    <i>Container diagram</i>
+end title
+
+Person(user, "Сотрудник приёмной комиссии", "Просматривает списки абитуриентов и аналитику")
+Person(admin, "Администратор", "Отвечает за учёт списков в системе")
+
+System_Boundary(applications_scrapper, "Агрегатор списков заявлений") {
+    Container(spa, "Single Page Application", "JavaScript, React.js 18", "Отображает списки поступающих и аналитику")
+    Container(gateway, "API Gateway", "C# 11, ASP.NET Core 6.0", "Определяет, к какому сервису необходимо обратиться")
+    Container(auth, "Auth", "C# 11, ASP.NET Core 6.0", "Занимается аутентификацией пользователей")
+    ContainerDb(user_db, "Users DB", "PostgreSQL", "Содержит информацию о пользователях")
+    Container(scrapper, "Сборщик списков", "Python, FastAPI 0.1", "Регулярно собирает списки поступающих с сайтов вузов")
+    ContainerDb(applications_db, "Applications DB", "PostgreSQL", "Содержит информацию о направлениях обучения и абитуриентах")
+    Container(analysis, "Data analyzer", "Python, FastAPI 0.1", "Занимается расчётами, связанными с применением моделей искусственного интеллекта")
+
+    Rel_U(spa, gateway, "Посылает API запросы", "JSON/HTTP")
+    Rel(auth, user_db, "Читает и записывает")
+    Rel(scrapper, applications_db, "Читает и записывает")
+}
+
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+System_Ext(universities_system, "Сайты вузов", "Содержат конкурсные списки")
+
+Rel(gateway, broker, "Запрашивает данные", "RabbitMQ")
+Rel(broker, auth, "Запрашивает данные", "RabbitMQ")
+Rel(broker, scrapper, "Запрашивает данные", "RabbitMQ")
+Rel(broker, analysis, "Запрашивает данные", "RabbitMQ")
+
+Rel_L(user, spa, "Просматривает списки")
+Rel_U(admin, spa, "Настраивает сбор списков")
+Rel_L(scrapper, universities_system, "Получает списки", "HTTP")
+
+@enduml

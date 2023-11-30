@@ -1,0 +1,21 @@
+@startuml C4Context
+!include libs\C4_Context.puml
+
+title
+    <b>Система сбора и анализа списков поступающих</b>
+    <i>Context diagram</i>
+end title
+
+Person(user, "Сотрудник приёмной комиссии")
+Person(admin, "Администратор")
+
+System(system, "Агрегатор списков заявлений", "Имеет веб-интерфейс. Получает данные с сайтов вузов. Предоставляет инструменты аналитики.")
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+System_Ext(universities_system, "Сайты вузов", "Содержат конкурсные списки")
+
+Rel(user, system, "Просматривает списки")
+Rel_R(system, broker, "Отправляет и запрашивает данные")
+Rel(admin, system, "Добавляет новые списки")
+Rel(system, universities_system, "Получает списки")
+
+@enduml
