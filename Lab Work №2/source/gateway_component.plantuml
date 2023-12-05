@@ -1,0 +1,25 @@
+@startuml C4APIGatewayComponent
+!include libs\C4_Container.puml
+!include libs\C4_Component.puml
+
+title
+    <b>Агрегатор списков заявлений</b>
+    <i>Component diagram</i>
+end title
+
+Container(spa, "Single Page Application", "JavaScript, React.js 18", "Отображает списки поступающих и аналитику")
+
+Container_Boundary(gateway, "API Gateway") {
+    Component(api, "API Controller", "", "Принимает запросы")
+    Component(cache, "Cache Controller", "", "Кэширует частые запросы")
+
+    Rel(api, cache, "Uses")
+}
+
+Rel(spa, api, "Посылает API запросы", "JSON/HTTP")
+
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+
+Rel(api, broker, "Запрашивает и отправляет данные", "RabbitMQ")
+
+@enduml

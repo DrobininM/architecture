@@ -1,0 +1,37 @@
+@startuml C4SPAComponent
+!include libs\C4_Container.puml
+!include libs\C4_Component.puml
+
+title
+    <b>Агрегатор списков заявлений</b>
+    <i>Component diagram</i>
+end title
+
+Person(user, "Сотрудник приёмной комиссии", "Просматривает списки абитуриентов и аналитику")
+Person(admin, "Администратор", "Отвечает за учёт списков в системе")
+
+Container_Boundary(spa_bound, "Single Page Application") {
+    Component(applications_view, "Applications View Controller", "", "Показывает списки поступающих")
+    Component(admin_panel, "Admin panel", "", "Позволяет управлять списками в системе")
+    Component(auth, "Auth Controller", "", "Аутентификация пользователя")
+    Component(storage, "Storage", "", "Внутреннее хранилище данных")
+    Component(api, "API Controller", "", "Отправляет сервисам запросы на получение данных")
+
+    Rel(applications_view, storage, "Uses")
+    Rel(admin_panel, storage, "Uses")
+    Rel(auth, storage, "Uses")
+
+    Rel(storage, api, "Uses")
+    Rel(auth, api, "Uses")
+
+    Rel(user, applications_view, "Просматривает списки")
+    Rel(user, auth, "Входит в систему")
+    Rel(admin, admin_panel, "Управляет списками")
+    Rel(admin, applications_view, "Просматривает списки")
+}
+
+Container(gateway, "API Gateway", "C# 11, ASP.NET Core 6.0", "Определяет, к какому сервису необходимо обратиться")
+
+Rel(api, gateway, "Посылает API запросы", "JSON/HTTP")
+
+@enduml

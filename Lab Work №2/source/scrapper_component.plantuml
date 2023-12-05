@@ -1,0 +1,28 @@
+@startuml C4ScrapperComponent
+!include libs\C4_Container.puml
+!include libs\C4_Component.puml
+
+title
+    <b>Агрегатор списков заявлений</b>
+    <i>Component diagram</i>
+end title
+
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+
+Container_Boundary(scrapper, "Сборщик списков") {
+    Component(api, "API Controller", "", "Предоставляет данные для внешних сервисов. Получает данные о том, какие списки собирать и их формат.")
+    Component(scrapping_controller, "Scrapper Controller", "", "Собирает списки с внешних источников")
+    Component(repository, "Repository", "", "Предоставляет списки")
+
+    Rel(broker, api, "Запрашивает данные", "RabbitMQ")
+    Rel(api, repository, "Uses")
+    Rel(scrapping_controller, repository, "Uses")
+}
+
+System_Ext(universities_system, "Сайты вузов", "Содержат конкурсные списки")
+Rel(scrapping_controller, universities_system, "Получает списки", "HTTP")
+
+ContainerDb(applications_db, "Applications DB", "PostgreSQL", "Содержит информацию о направлениях обучения и абитуриентах, а также какие списки собирать и их формат")
+Rel(repository, applications_db, "Читает и записывает")
+
+@enduml
