@@ -1,0 +1,23 @@
+@startuml C4AuthComponent
+!include libs\C4_Container.puml
+!include libs\C4_Component.puml
+
+title
+    <b>Агрегатор списков заявлений</b>
+    <i>Component diagram</i>
+end title
+
+SystemQueue_Ext(broker, "Брокер сообщений", "Управляет запросами между сервисами")
+
+Container_Boundary(auth, "Auth") {
+    Component(signin, "Sign In Controller", "API Controller", "Определяет, возможно ли дать пользователю соответствующие права")
+    Component(repository, "Repository", "", "Предоставляет данные о пользователях")
+
+    Rel(broker, signin, "Запрашивает данные", "RabbitMQ")
+    Rel(signin, repository, "Uses")
+}
+
+ContainerDb(user_db, "Users DB", "PostgreSQL", "Содержит информацию о пользователях")
+Rel(repository, user_db, "Читает и записывает")
+
+@enduml
